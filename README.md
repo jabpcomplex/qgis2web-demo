@@ -21,3 +21,10 @@ El origen de este plugin está en los plugins ya existentes qgis2leaf, desarroll
 - Proj4js
 - Proj4Leaflet
 - OSMBuildings
+
+# Ejemplo de mapa creado con qgis2web
+
+<p align="center">
+<img src="https://raw.githubusercontent.com/jabpcomplex/qwis2web-demo/refs/heads/main/utopias_iztapalapa.png">
+</p>
+
