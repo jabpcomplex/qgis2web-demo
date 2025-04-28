@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/L.Control.Locate.min.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/filter.css">
+<link rel="stylesheet" href="css/nouislider.min.css">
+        <link rel="stylesheet" href="css/leaflet-measure.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title>Wifi gratuito en Utopias de Iztapalapa</title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/L.Control.Locate.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet-measure.js"></script>
+        <script src="js/tailDT.js"></script>
+<script src="js/nouislider.min.js"></script>
+<script src="js/wNumb.js"></script>
+        <script src="data/Iztapalapa_2.js"></script>
+        <script src="data/PuntosdeaccesoaWifi_3.js"></script>
+        <script>
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:28, minZoom:1
+        }).fitBounds([[19.270375468068327,-99.20736566726893],[19.418312735063413,-98.90977662852882]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        // remove popup's row if "visible-with-data"
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        // add class to format popup if it contains media
+		function addClassToPopupIfMedia(content, popup) {
+			var tempDiv = document.createElement('div');
+			tempDiv.innerHTML = content;
+			if (tempDiv.querySelector('td img')) {
+				popup._contentNode.classList.add('media');
+					// Delay to force the redraw
+					setTimeout(function() {
+						popup.update();
+					}, 10);
+			} else {
+				popup._contentNode.classList.remove('media');
+			}
+		}
+        var title = new L.Control({'position':'topright'});
+        title.onAdd = function (map) {
+            this._div = L.DomUtil.create('div', 'info');
+            this.update();
+            return this._div;
+        };
+        title.update = function () {
+            this._div.innerHTML = '<h2>Wifi gratuito en Utopias de Iztapalapa</h2>';
+        };
+        title.addTo(map);
+        var abstract = new L.Control({'position':'bottomright'});
+        abstract.onAdd = function (map) {
+            this._div = L.DomUtil.create('div',
+            'leaflet-control abstract');
+            this._div.id = 'abstract'
+
+                abstract.show();
+                return this._div;
+            };
+            abstract.show = function () {
+                this._div.classList.remove("abstract");
+                this._div.classList.add("abstractUncollapsed");
+                this._div.innerHTML = 'Mapa web creado con qgis para visualizar el número de puntos de accesos a wifi gratuito en la diferentes UTOPIAS de la alcaldía iztapalapa.';
+        };
+        abstract.addTo(map);
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        L.control.locate({locateOptions: {maxZoom: 19}}).addTo(map);
+        var measureControl = new L.Control.Measure({
+            position: 'topleft',
+            primaryLengthUnit: 'meters',
+            secondaryLengthUnit: 'kilometers',
+            primaryAreaUnit: 'sqmeters',
+            secondaryAreaUnit: 'hectares'
+        });
+        measureControl.addTo(map);
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].innerHTML = '';
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0].className += ' fas fa-ruler';
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        map.createPane('pane_OpenStreetMap_0');
+        map.getPane('pane_OpenStreetMap_0').style.zIndex = 400;
+        var layer_OpenStreetMap_0 = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            pane: 'pane_OpenStreetMap_0',
+            opacity: 1.0,
+            attribution: '',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 19
+        });
+        layer_OpenStreetMap_0;
+        map.addLayer(layer_OpenStreetMap_0);
+        map.createPane('pane_Positron_1');
+        map.getPane('pane_Positron_1').style.zIndex = 401;
+        var layer_Positron_1 = L.tileLayer('https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+            pane: 'pane_Positron_1',
+            opacity: 1.0,
+            attribution: '<a href="https://cartodb.com/basemaps/">Map tiles by CartoDB, under CC BY 3.0. Data by OpenStreetMap, under ODbL.</a>',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 20
+        });
+        layer_Positron_1;
+        map.addLayer(layer_Positron_1);
+        function pop_Iztapalapa_2(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['fid'] !== null ? autolinker.link(String(feature.properties['fid']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['id_institu'] !== null ? autolinker.link(String(feature.properties['id_institu']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['idestado'] !== null ? autolinker.link(String(feature.properties['idestado']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['id_distrit'] !== null ? autolinker.link(String(feature.properties['id_distrit']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['id_sector'] !== null ? autolinker.link(String(feature.properties['id_sector']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['distrito'] !== null ? autolinker.link(String(feature.properties['distrito']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['institucio'] !== null ? autolinker.link(String(feature.properties['institucio']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['ZONA'] !== null ? autolinker.link(String(feature.properties['ZONA']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['ENABLED'] !== null ? autolinker.link(String(feature.properties['ENABLED']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['dup'] !== null ? autolinker.link(String(feature.properties['dup']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_Iztapalapa_2_0() {
+            return {
+                pane: 'pane_Iztapalapa_2',
+                opacity: 1,
+                color: 'rgba(35,105,35,1.0)',
+                dashArray: '15.0,3.0',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 3.0, 
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        map.createPane('pane_Iztapalapa_2');
+        map.getPane('pane_Iztapalapa_2').style.zIndex = 402;
+        map.getPane('pane_Iztapalapa_2').style['mix-blend-mode'] = 'normal';
+        var layer_Iztapalapa_2 = new L.geoJson(json_Iztapalapa_2, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Iztapalapa_2',
+            layerName: 'layer_Iztapalapa_2',
+            pane: 'pane_Iztapalapa_2',
+            onEachFeature: pop_Iztapalapa_2,
+            style: style_Iztapalapa_2_0,
+        });
+        bounds_group.addLayer(layer_Iztapalapa_2);
+        map.addLayer(layer_Iztapalapa_2);
+        function pop_PuntosdeaccesoaWifi_3(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>ID</strong><br />' + (feature.properties['ID'] !== null ? autolinker.link(String(feature.properties['ID']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Colonia</strong><br />' + (feature.properties['Colonia'] !== null ? autolinker.link(String(feature.properties['Colonia']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Alcald�a</strong><br />' + (feature.properties['Alcald�a'] !== null ? autolinker.link(String(feature.properties['Alcald�a']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Latitud</strong><br />' + (feature.properties['Latitud'] !== null ? autolinker.link(String(feature.properties['Latitud']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Longitud</strong><br />' + (feature.properties['Longitud'] !== null ? autolinker.link(String(feature.properties['Longitud']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Puntos_de_acceso</strong><br />' + (feature.properties['Puntos_de_acceso'] !== null ? autolinker.link(String(feature.properties['Puntos_de_acceso']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Programa</strong><br />' + (feature.properties['Programa'] !== null ? autolinker.link(String(feature.properties['Programa']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_PuntosdeaccesoaWifi_3_0(feature) {
+            if (feature.properties['Puntos_de_acceso'] >= 5.000000 && feature.properties['Puntos_de_acceso'] <= 9.200000 ) {
+                return {
+                pane: 'pane_PuntosdeaccesoaWifi_3',
+                radius: 2.0,
+                opacity: 1,
+                color: 'rgba(61,128,53,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(43,131,186,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Puntos_de_acceso'] >= 9.200000 && feature.properties['Puntos_de_acceso'] <= 12.000000 ) {
+                return {
+                pane: 'pane_PuntosdeaccesoaWifi_3',
+                radius: 5.5,
+                opacity: 1,
+                color: 'rgba(61,128,53,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(85,220,51,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Puntos_de_acceso'] >= 12.000000 && feature.properties['Puntos_de_acceso'] <= 16.000000 ) {
+                return {
+                pane: 'pane_PuntosdeaccesoaWifi_3',
+                radius: 9.0,
+                opacity: 1,
+                color: 'rgba(61,128,53,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(227,244,32,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Puntos_de_acceso'] >= 16.000000 && feature.properties['Puntos_de_acceso'] <= 20.000000 ) {
+                return {
+                pane: 'pane_PuntosdeaccesoaWifi_3',
+                radius: 12.5,
+                opacity: 1,
+                color: 'rgba(61,128,53,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(254,129,6,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['Puntos_de_acceso'] >= 20.000000 && feature.properties['Puntos_de_acceso'] <= 26.000000 ) {
+                return {
+                pane: 'pane_PuntosdeaccesoaWifi_3',
+                radius: 16.0,
+                opacity: 1,
+                color: 'rgba(61,128,53,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 2.0,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(243,43,48,1.0)',
+                interactive: true,
+            }
+            }
+        }
+        map.createPane('pane_PuntosdeaccesoaWifi_3');
+        map.getPane('pane_PuntosdeaccesoaWifi_3').style.zIndex = 403;
+        map.getPane('pane_PuntosdeaccesoaWifi_3').style['mix-blend-mode'] = 'normal';
+        var layer_PuntosdeaccesoaWifi_3 = new L.geoJson(json_PuntosdeaccesoaWifi_3, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_PuntosdeaccesoaWifi_3',
+            layerName: 'layer_PuntosdeaccesoaWifi_3',
+            pane: 'pane_PuntosdeaccesoaWifi_3',
+            onEachFeature: pop_PuntosdeaccesoaWifi_3,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_PuntosdeaccesoaWifi_3_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_PuntosdeaccesoaWifi_3);
+        map.addLayer(layer_PuntosdeaccesoaWifi_3);
+        var overlaysTree = [
+            {label: 'Puntos de acceso a Wifi<br /><table><tr><td style="text-align: center;"><img src="legend/PuntosdeaccesoaWifi_3_5920.png" /></td><td>5 - 9.2</td></tr><tr><td style="text-align: center;"><img src="legend/PuntosdeaccesoaWifi_3_92121.png" /></td><td>9.2 - 12</td></tr><tr><td style="text-align: center;"><img src="legend/PuntosdeaccesoaWifi_3_12162.png" /></td><td>12 - 16</td></tr><tr><td style="text-align: center;"><img src="legend/PuntosdeaccesoaWifi_3_16203.png" /></td><td>16 - 20</td></tr><tr><td style="text-align: center;"><img src="legend/PuntosdeaccesoaWifi_3_20264.png" /></td><td>20 - 26</td></tr></table>', layer: layer_PuntosdeaccesoaWifi_3},
+            {label: '<img src="legend/Iztapalapa_2.png" /> Iztapalapa', layer: layer_Iztapalapa_2},
+            {label: "Positron", layer: layer_Positron_1, radioGroup: 'bm' },
+            {label: "OpenStreetMap", layer: layer_OpenStreetMap_0, radioGroup: 'bm' },]
+        var lay = L.control.layers.tree(null, overlaysTree,{
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: false, 
+        });
+        lay.addTo(map);
+		document.addEventListener("DOMContentLoaded", function() {
+            // set new Layers List height which considers toggle icon
+            function newLayersListHeight() {
+                var layerScrollbarElement = document.querySelector('.leaflet-control-layers-scrollbar');
+                if (layerScrollbarElement) {
+                    var layersListElement = document.querySelector('.leaflet-control-layers-list');
+                    var originalHeight = layersListElement.style.height 
+                        || window.getComputedStyle(layersListElement).height;
+                    var newHeight = parseFloat(originalHeight) - 50;
+                    layersListElement.style.height = newHeight + 'px';
+                }
+            }
+            var isLayersListExpanded = true;
+            var controlLayersElement = document.querySelector('.leaflet-control-layers');
+            var toggleLayerControl = document.querySelector('.leaflet-control-layers-toggle');
+            // toggle Collapsed/Expanded and apply new Layers List height
+            toggleLayerControl.addEventListener('click', function() {
+                if (isLayersListExpanded) {
+                    controlLayersElement.classList.remove('leaflet-control-layers-expanded');
+                } else {
+                    controlLayersElement.classList.add('leaflet-control-layers-expanded');
+                }
+                isLayersListExpanded = !isLayersListExpanded;
+                newLayersListHeight()
+            });	
+			// apply new Layers List height if toggle layerstree
+			if (controlLayersElement) {
+				controlLayersElement.addEventListener('click', function(event) {
+					var toggleLayerHeaderPointer = event.target.closest('.leaflet-layerstree-header-pointer span');
+					if (toggleLayerHeaderPointer) {
+						newLayersListHeight();
+					}
+				});
+			}
+            // Collapsed/Expanded at Start to apply new height
+            setTimeout(function() {
+                toggleLayerControl.click();
+            }, 10);
+            setTimeout(function() {
+                toggleLayerControl.click();
+            }, 10);
+            // Collapsed touch/small screen
+            var isSmallScreen = window.innerWidth < 650;
+            if (isSmallScreen) {
+                setTimeout(function() {
+                    controlLayersElement.classList.remove('leaflet-control-layers-expanded');
+                    isLayersListExpanded = !isLayersListExpanded;
+                }, 500);
+            }  
+        });       
+        setBounds();
+        var mapDiv = document.getElementById('map');
+        var row = document.createElement('div');
+        row.className="row";
+        row.id="all";
+        row.style.height = "100%";
+        var col1 = document.createElement('div');
+        col1.className="col9";
+        col1.id = "mapWindow";
+        col1.style.height = "99%";
+        col1.style.width = "80%";
+        col1.style.display = "inline-block";
+        var col2 = document.createElement('div');
+        col2.className="col3";
+        col2.id = "menu";
+        col2.style.display = "inline-block";
+        mapDiv.parentNode.insertBefore(row, mapDiv);
+        document.getElementById("all").appendChild(col1);
+        document.getElementById("all").appendChild(col2);
+        col1.appendChild(mapDiv)
+        var Filters = {"Puntos_de_acceso": "int","ID": "str"};
+        function filterFunc() {
+          map.eachLayer(function(lyr){
+          if ("options" in lyr && "dataVar" in lyr["options"]){
+            features = this[lyr["options"]["dataVar"]].features.slice(0);
+            try{
+              for (key in Filters){
+                keyS = key.replace(/[^a-zA-Z0-9_]/g, "")
+                if (Filters[key] == "str" || Filters[key] == "bool"){
+                  var selection = [];
+                  var options = document.getElementById("sel_" + keyS).options
+                  for (var i=0; i < options.length; i++) {
+                    if (options[i].selected) selection.push(options[i].value);
+                  }
+                    try{
+                      if (key in features[0].properties){
+                        for (i = features.length - 1;
+                          i >= 0; --i){
+                          if (selection.indexOf(
+                          features[i].properties[key])<0
+                          && selection.length>0) {
+                          features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                  }
+                }
+                if (Filters[key] == "int"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (parseInt(features[i].properties[key])
+                          < sliderVals[0]
+                          || parseInt(features[i].properties[key])
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "real"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (features[i].properties[key]
+                          < sliderVals[0]
+                          || features[i].properties[key]
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "date"
+                  || Filters[key] == "datetime"
+                  || Filters[key] == "time"){
+                  try{
+                    if (key in features[0].properties){
+                      HTMLkey = key.replace(/[&\/\\#,+()$~%.'":*?<>{} ]/g, '');
+                      startdate = document.getElementById("dat_" +
+                        HTMLkey + "_date1").value.replace(" ", "T");
+                      enddate = document.getElementById("dat_" +
+                        HTMLkey + "_date2").value.replace(" ", "T");
+                      for (i = features.length - 1; i >= 0; --i){
+                        if (features[i].properties[key] < startdate
+                          || features[i].properties[key] > enddate){
+                          features.splice(i,1);
+                        }
+                      }
+                    }
+                  } catch(err){
+                  }
+                }
+              }
+            } catch(err){
+            }
+          this[lyr["options"]["layerName"]].clearLayers();
+          this[lyr["options"]["layerName"]].addData(features);
+          }
+          })
+        }
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_Puntos_de_acceso = document.createElement("div");
+            div_Puntos_de_acceso.id = "div_Puntos_de_acceso";
+            div_Puntos_de_acceso.className = "slider";
+            document.getElementById("menu").appendChild(div_Puntos_de_acceso);
+            var lab_Puntos_de_acceso = document.createElement('div');
+            lab_Puntos_de_acceso.innerHTML  = 'Puntos_de_acceso: <span id="val_Puntos_de_acceso"></span>';
+            lab_Puntos_de_acceso.className = 'filterlabel';
+            document.getElementById("menu").appendChild(lab_Puntos_de_acceso);
+            var reset_Puntos_de_acceso = document.createElement('div');
+            reset_Puntos_de_acceso.innerHTML = 'clear filter';
+            reset_Puntos_de_acceso.className = 'filterlabel';
+            lab_Puntos_de_acceso.className = 'filterlabel';
+            reset_Puntos_de_acceso.onclick = function() {
+                sel_Puntos_de_acceso.noUiSlider.reset();
+            };
+            document.getElementById("menu").appendChild(reset_Puntos_de_acceso);
+            var sel_Puntos_de_acceso = document.getElementById('div_Puntos_de_acceso');
+            noUiSlider.create(sel_Puntos_de_acceso, {
+                connect: true,
+                start: [5, 26],
+                step: 1,
+                format: wNumb({
+                    decimals: 0,
+                    }),
+                range: {
+                min: 5,
+                max: 26
+                }
+            });
+            sel_Puntos_de_acceso.noUiSlider.on('update', function (values) {
+            filterVals =[];
+            for (value in values){
+            filterVals.push(parseInt(value))
+            }
+            val_Puntos_de_acceso = document.getElementById('val_Puntos_de_acceso');
+            val_Puntos_de_acceso.innerHTML = values.join(' - ');
+                filterFunc()
+            });
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_ID = document.createElement('div');
+            div_ID.id = "div_ID";
+            div_ID.className= "filterselect";
+            document.getElementById("menu").appendChild(div_ID);
+            sel_ID = document.createElement('select');
+            sel_ID.multiple = true;
+            sel_ID.size = 10;
+            sel_ID.id = "sel_ID";
+            var ID_options_str = "<option value='' unselected></option>";
+            sel_ID.onchange = function(){filterFunc()};
+            ID_options_str  += '<option value="Atzintli">Atzintli</option>';
+            ID_options_str  += '<option value="Barco ">Barco </option>';
+            ID_options_str  += '<option value="Cuauhticalli">Cuauhticalli</option>';
+            ID_options_str  += '<option value="La Cascada">La Cascada</option>';
+            ID_options_str  += '<option value="Libertad">Libertad</option>';
+            ID_options_str  += '<option value="Meyehualco ">Meyehualco </option>';
+            ID_options_str  += '<option value="Olini">Olini</option>';
+            ID_options_str  += '<option value="Papalotl">Papalotl</option>';
+            ID_options_str  += '<option value="Quetzalcoatl">Quetzalcoatl</option>';
+            ID_options_str  += '<option value="Tecoloxtitlan">Tecoloxtitlan</option>';
+            ID_options_str  += '<option value="Teotongo">Teotongo</option>';
+            ID_options_str  += '<option value="Tezontli">Tezontli</option>';
+            sel_ID.innerHTML = ID_options_str;
+            div_ID.appendChild(sel_ID);
+            var lab_ID = document.createElement('div');
+            lab_ID.innerHTML = 'ID';
+            lab_ID.className = 'filterlabel';
+            div_ID.appendChild(lab_ID);
+            var reset_ID = document.createElement('div');
+            reset_ID.innerHTML = 'clear filter';
+            reset_ID.className = 'filterlabel';
+            reset_ID.onclick = function() {
+                var options = document.getElementById("sel_ID").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_ID.appendChild(reset_ID);
+        </script>
+    </body>
+</html>
