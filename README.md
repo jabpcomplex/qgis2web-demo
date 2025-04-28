@@ -1,4 +1,4 @@
-# qwis2web-demo
+# qgis2web-demo
 Para publicar nuestros mapas en la web, utilizando en el complemento **qgis2web**  es muy sencillo. Basta con facilitar una dirección URL de nuestros mapas online, para que puedan verlos.
 
 A pesar de que la creación de mapas web está estrechamente relacionada con la programación y tiene una curva de aprendizaje alta, existen algunas herramientas que podemos utilizar para hacer mapas interactivos de una forma sencilla.
