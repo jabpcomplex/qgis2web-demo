@@ -1,9 +1,8 @@
 # qgis2web-demo
-Para publicar nuestros mapas en la web, utilizando en el complemento **qgis2web**  es muy sencillo. Basta con facilitar una dirección URL de nuestros mapas online, para que puedan verlos.
 
 A pesar de que la creación de mapas web está estrechamente relacionada con la programación y tiene una curva de aprendizaje alta, existen algunas herramientas que podemos utilizar para hacer mapas interactivos de una forma sencilla.
 
-En este caso vamos a enseñarte a crear mapas web con qgis2web, un plugin de QGIS y aprovecharnos de toda la potencia de las famosas librerías OpenLayers, Leaflet y Mapbox GL JS.
+Una forma de publicar mapas web de forma rápida y sencilla, es utilizando el complemento **qgis2web** en QGIS. Basta con dar unos cuantos clicks en la interfaz gráfica de qgis y podrás generar un mapa html, con javascript y css para después publicar en Github pages.
 
 El origen de este plugin está en los plugins ya existentes qgis2leaf, desarrollado por Riccardo Klinger y  qgis-ol3 de Victor Olaya. Ambos plugins  se han fusionado en uno único denominado qgis2web y ahora es Tom Chadwin quien mantiene este nuevo complemento.
 
